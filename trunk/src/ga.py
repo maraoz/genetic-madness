@@ -14,13 +14,14 @@ class GeneticAlgorithm(object):
     """ Generic class for genetic algorithm """
     
     def __init__(self, fitness_function, random_chromosome_function,
-                 mating_function, mutation_function, max_generations=2000,
-                 population_size=100):
+                 mating_function, mutation_function, generation_callback,
+                 max_generations=2000, population_size=100):
         
         self.fitness = fitness_function
         self.random_chromosome = random_chromosome_function
         self.combine = mating_function
         self.mutate = mutation_function
+        self.generation_callback = generation_callback
 
         self.max_generations = max_generations
         self.population_size = population_size
@@ -68,13 +69,18 @@ class GeneticAlgorithm(object):
         # default is no termination
         return False
 
+    def best_callback(self):
+        best = self.get_best_individual()
+        self.generation_callback(best['genes'], best['fitness'])
+        
     def run(self):
         
         self.initialize_population()    
         while not self.termination_condition() and \
               self.generation < self.max_generations:
-            
+            print self.generation
             self.evaluate_fitness()
+            self.best_callback()
             offspring = self.get_offspring()
             mutated_offspring = self.mutation(offspring)
             self.introduce(mutated_offspring)
@@ -98,7 +104,7 @@ class ElitistGeneticAlgorithm(GeneticAlgorithm):
 
         # we calculate how many offspring to generate based on the
         # ammount of individuals that will survive to next generation
-        elite = 0.4
+        elite = 0.1
         self.elite_ammount = int(elite * self.population_size)
         self.offspring_ammount = self.population_size - self.elite_ammount
 
