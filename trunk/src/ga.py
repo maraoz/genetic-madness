@@ -34,8 +34,8 @@ class GeneticAlgorithm(object):
     def evaluate_fitness(self):
         for individual in self.population:
             chrm = individual['genes']
-            individual['fitness'] = self.fitness(chrm) or 0.1
             # if 0 set fitness to a small number
+            individual['fitness'] = self.fitness(chrm) or 0.1
     def sort_by_fitness(self):
         cmp_function = lambda c, d: cmp(d['fitness'], c['fitness'])
         self.population.sort(cmp=cmp_function)
@@ -64,14 +64,16 @@ class GeneticAlgorithm(object):
     def introduce(self, offspring):
         raise NotImplementedError
 
-    def population_stable(self):
-        raise NotImplementedError
+    def termination_condition(self):
+        # default is no termination
+        return False
 
     def run(self):
         
         self.initialize_population()    
-        while not self.population_stable() and \
+        while not self.termination_condition() and \
               self.generation < self.max_generations:
+            
             self.evaluate_fitness()
             offspring = self.get_offspring()
             offspring = self.mutation(offspring)
@@ -89,36 +91,37 @@ class ElitistGeneticAlgorithm(GeneticAlgorithm):
         is preserved alive and intact to the next generation. This are
         the best individuals based on fitness"""
 
-    def __init__(self, max_fitness, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
 
-        self.max_fitness = max_fitness
     
-        elite = 0.4
         GeneticAlgorithm.__init__(self, *args, **kwargs)
 
         # we calculate how many offspring to generate based on the
         # ammount of individuals that will survive to next generation
+        elite = 0.4
         self.elite_ammount = int(elite * self.population_size)
         self.offspring_ammount = self.population_size - self.elite_ammount
 
-    def population_stable(self):
-        return self.population[0]['fitness'] == self.max_fitness
 
     def introduce(self, offspring):
         assert len(self.population) == self.population_size
         self.population = self.population[:self.elite_ammount] + offspring
 
-    def print_best(self, is_ordered):
-        if not is_ordered:
-            best = max(self.population, key=lambda i: i['fitness'])
-        else:
-            best = self.population[-1]
-        print "best in gen %d is %s with fitness %d" % \
-              (self.generation, best['genes'], best['fitness'])
+
+class KnownOptimaGeneticAlgorithm(GeneticAlgorithm):
+    """This is a special case of Genetic Algorithms where the objective
+    fitness is known, and the algorithm can halt when that fitness is 
+    reached"""
+    def __init__(self, max_fitness, *args, **kwargs):
+        self.max_fitness = max_fitness
+    
+        GeneticAlgorithm.__init__(self, *args, **kwargs)
+    
+    def termination_condition(self):
+        return self.population[0]['fitness'] == self.max_fitness
 
 
-
-class AsexualGeneticAlgorithm(ElitistGeneticAlgorithm):
+class AsexualGeneticAlgorithm(GeneticAlgorithm):
     """In this simple version, the offspring we generate are
         exact copies of the fittest individuals in the population.
         Then mutation will be applied, so this algorithm simulates
@@ -127,8 +130,6 @@ class AsexualGeneticAlgorithm(ElitistGeneticAlgorithm):
 
     def get_offspring(self):
         self.sort_by_fitness()
-        # optional
-        # self.print_best(is_ordered = True)
         return self.population[:self.offspring_ammount]
 
 class CrossoverGeneticAlgorithm(ElitistGeneticAlgorithm):
@@ -137,7 +138,7 @@ class CrossoverGeneticAlgorithm(ElitistGeneticAlgorithm):
         are chosen for mating using a linear roulette wheel based on
         fitness."""
 
-    def get_random_parent(self, total):
+    def roulette_wheel(self, total):
         """ total: total population fitness """
         if total == 0:
             return choice(self.population)
@@ -156,14 +157,12 @@ class CrossoverGeneticAlgorithm(ElitistGeneticAlgorithm):
         pop_fitness = sum(i['fitness'] for i in self.population)
         offspring = []
         for i in xrange(self.offspring_ammount):
-            father = self.get_random_parent(pop_fitness)
-            mother = self.get_random_parent(pop_fitness)
+            father = self.roulette_wheel(pop_fitness)
+            mother = self.roulette_wheel(pop_fitness)
 
             combined_genes = self.combine(father['genes'], mother['genes'])
             offspring.append({'genes' : combined_genes, 'fitness' : 0})
 
-        # optional
-        #self.print_best(is_ordered = True)
         return offspring
         
 
