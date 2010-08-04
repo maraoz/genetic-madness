@@ -1,4 +1,7 @@
-#Tue Aug 03 21:53:04 ART 2010
+#Tue Aug 03 22:39:37 ART 2010
 eclipse.preferences.version=1
+encoding//src/brain.py=utf-8
+encoding//src/creature.py=utf-8
 encoding//src/environment.py=utf-8
 encoding//src/ga.py=utf-8
+encoding//src/util.py=utf-8
