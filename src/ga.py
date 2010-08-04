@@ -76,8 +76,8 @@ class GeneticAlgorithm(object):
             
             self.evaluate_fitness()
             offspring = self.get_offspring()
-            offspring = self.mutation(offspring)
-            self.introduce(offspring)
+            mutated_offspring = self.mutation(offspring)
+            self.introduce(mutated_offspring)
             self.next_generation()
 
         best = self.get_best_individual()
