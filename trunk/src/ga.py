@@ -28,7 +28,6 @@ class GeneticAlgorithm(object):
         
         
     def get_best_individual(self):
-        self.evaluate_fitness()
         return max(self.population, key=lambda c: c['fitness'])
         
 
@@ -78,7 +77,7 @@ class GeneticAlgorithm(object):
         self.initialize_population()    
         while not self.termination_condition() and \
               self.generation < self.max_generations:
-            print self.generation
+            print "Generation", self.generation
             self.evaluate_fitness()
             self.best_callback()
             offspring = self.get_offspring()
@@ -170,7 +169,16 @@ class CrossoverGeneticAlgorithm(ElitistGeneticAlgorithm):
             offspring.append({'genes' : combined_genes, 'fitness' : 0})
 
         return offspring
-        
+
+class FreeForAllGeneticAlgorithm(CrossoverGeneticAlgorithm):
+    """This algorithms assumes that fitness of an individual depends
+    on its performance in relatin to others. In this case, the fitness function
+    must receive the whole population to be evauated, and should return a list
+    of all fitnesses."""
+    def evaluate_fitness(self):
+        fitnesses = self.fitness([ind['genes'] for ind in self.population])
+        for index, individual in enumerate(self.population):
+            individual['fitness'] = fitnesses[index] or 0.1
 
 def main():
     pass
