@@ -13,7 +13,7 @@ import pygame
 X = 0
 Y = 1
 
-CITY_N = 200
+CITY_N = 30
 SWAP_N = 500
 CROSSOVER_P = 0.8
 MUTATION_P = 0.0005
@@ -24,8 +24,8 @@ class Map(object):
         self.n = n
         self.cities = []
         for i in xrange(n):
-            self.cities.append((randint(0,640), randint(0,480)))
-            #self.cities.append((320+300*cos(i*2*pi/n), 240+200*sin(i*2*pi/n)))
+            #self.cities.append((randint(0,640), randint(0,480)))
+            self.cities.append((320+200*cos(i*2*pi/n), 240+200*sin(i*2*pi/n)))
     
     def distance(self, i, j):
         city_i = self.cities[i]
@@ -103,12 +103,6 @@ if __name__ == "__main__":
                  mating_function, mutation_function, generation_callback, max_generations=100000,
                  population_size=100)
     t, f =  algo.run()
-    #c = random_chromosome_function()
-    #d = mutation_function(c)
-    #while True:
-    #    c, d = d, mutation_function(d)
-    #    generation_callback(c, 10)
-    #    generation_callback(d, 10)
         
     
     print "Done!"
